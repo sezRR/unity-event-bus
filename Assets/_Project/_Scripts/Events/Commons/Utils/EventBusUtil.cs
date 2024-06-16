@@ -31,7 +31,7 @@ public static class EventBusUtil
     public static void Initialize()
     {
         EventTypes = PredefinedAssemblyUtil.GetTypes(typeof(IEvent));
-        EventTypes = InitializeAllBusses();
+        EventBusTypes = InitializeAllBusses();
     }
 
     static List<Type> InitializeAllBusses()

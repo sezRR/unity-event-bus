@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Scripts/Upgrades/UI/Upgrades.uss?fileID=7433441132597879392&amp;guid=2c08737d9a9868f41beff68f14738785&amp;type=3#Upgrades" />
+    <ui:VisualElement class="container">
+        <ui:Label text="Upgrades" class="title" />
+        <ui:ScrollView name="UpgradesContainer" class="upgrade-list" />
+    </ui:VisualElement>
+</ui:UXML>

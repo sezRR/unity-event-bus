@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Player : MonoBehaviour
 {
@@ -31,9 +30,6 @@ public class Player : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.S))
             EventBus<PlayerEvent>.Raise(new PlayerEvent(health, mana));
-        {
-            
-        }
     }
 
     void HandleTestEvent()
