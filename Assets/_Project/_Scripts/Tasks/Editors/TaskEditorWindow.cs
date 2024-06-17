@@ -1,16 +1,15 @@
-﻿using System;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
+using _Project._Scripts.NewTasks;
 using _Project._Scripts.Tasks.Commons.Bases;
-using _Project._Scripts.Tasks.Commons.Interfaces;
 
 public class TaskEditorWindow : EditorWindow
 {
     private BaseTask selectedTask;
     private Vector2 scrollPosition;
-    private List<BaseTask> allTasks = new();
-    private List<BaseTask> tasksToDelete = new();
+    private List<BaseTask> allTasks = new List<BaseTask>();
+    private List<BaseTask> tasksToDelete = new List<BaseTask>();
     private Texture2D windowIcon;
     private const string IconPath = "Assets/Editor/Icons/TaskEditorIcon.png";
 
@@ -32,22 +31,32 @@ public class TaskEditorWindow : EditorWindow
     {
         GUILayout.Label("Task Editor", EditorStyles.boldLabel);
 
+        if (GUILayout.Button("Reset All Progress"))
+        {
+            if (EditorUtility.DisplayDialog("Reset All Progress", "Are you sure you want to reset progress for all tasks?", "Yes", "No"))
+            {
+                ResetAllTasksProgress();
+            }
+        }
+
         if (GUILayout.Button("Create New Task"))
+        {
             CreateNewTask();
+        }
 
         if (GUILayout.Button("Refresh All Tasks"))
+        {
             RefreshAllTasks();
-        
-        if (GUILayout.Button("Reset All Progress"))
-            if (EditorUtility.DisplayDialog("Reset All Progress", "Are you sure you want to reset progress for all tasks?", "Yes", "No"))
-                ResetAllTasksProgress();
+        }
 
         GUILayout.Space(20);
 
         selectedTask = (BaseTask)EditorGUILayout.ObjectField("Selected Task", selectedTask, typeof(BaseTask), false);
 
         if (selectedTask != null)
+        {
             DisplayTaskDetails();
+        }
 
         GUILayout.Space(20);
 
@@ -61,14 +70,13 @@ public class TaskEditorWindow : EditorWindow
         newTask.description = "Task Description";
 
         string path = EditorUtility.SaveFilePanelInProject("Save New Task", "NewTask", "asset", "Please enter a file name to save the task to");
-        if (path == "")
-        {
-            AssetDatabase.CreateAsset(newTask, path);
-            AssetDatabase.SaveAssets();
+        if (path == "") return;
 
-            selectedTask = newTask;
-            RefreshAllTasks();
-        }
+        AssetDatabase.CreateAsset(newTask, path);
+        AssetDatabase.SaveAssets();
+
+        selectedTask = newTask;
+        RefreshAllTasks();
     }
 
     private void DisplayTaskDetails()
@@ -80,6 +88,8 @@ public class TaskEditorWindow : EditorWindow
 
         EditorGUILayout.LabelField("Description");
         selectedTask.description = EditorGUILayout.TextField(selectedTask.description);
+
+        GUILayout.Label($"Status: {selectedTask.Status}");
 
         GUILayout.Space(10);
 
@@ -98,13 +108,12 @@ public class TaskEditorWindow : EditorWindow
         }
 
         if (GUILayout.Button("Delete Task"))
-            if (EditorUtility.DisplayDialog("Delete Task", $"Are you sure you want to delete selected task? ({selectedTask.name})", "Yes", "No"))
-            {
-                string path = AssetDatabase.GetAssetPath(selectedTask);
-                AssetDatabase.DeleteAsset(path);
-                selectedTask = null;
-                RefreshAllTasks();
-            }
+        {
+            string path = AssetDatabase.GetAssetPath(selectedTask);
+            AssetDatabase.DeleteAsset(path);
+            selectedTask = null;
+            RefreshAllTasks();
+        }
 
         if (GUILayout.Button("Reset Progress"))
         {
@@ -126,47 +135,50 @@ public class TaskEditorWindow : EditorWindow
     {
         EditorGUILayout.LabelField("Requirements", EditorStyles.boldLabel);
 
-        if (selectedTask.requirements != null)
+        if (selectedTask.requirements == null)
         {
-            for (int i = 0; i < selectedTask.requirements.Length; i++)
-            {
-                EditorGUILayout.BeginHorizontal();
-                selectedTask.requirements[i] = (BaseTaskRequirement)EditorGUILayout.ObjectField(selectedTask.requirements[i], typeof(ITaskRequirement), false);
-                if (GUILayout.Button("Remove", GUILayout.Width(60)))
-                {
-                    ArrayUtility.RemoveAt(ref selectedTask.requirements, i);
-                }
-                EditorGUILayout.EndHorizontal();
-            }
+            selectedTask.requirements = new BaseTaskRequirement[0];
         }
 
-        if (!GUILayout.Button("Add Requirement")) return;
-        
-        selectedTask.requirements ??= Array.Empty<BaseTaskRequirement>();
-        ArrayUtility.Add(ref selectedTask.requirements, null);
+        for (int i = 0; i < selectedTask.requirements.Length; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            selectedTask.requirements[i] = (BaseTaskRequirement)EditorGUILayout.ObjectField(selectedTask.requirements[i], typeof(BaseTaskRequirement), false);
+            if (GUILayout.Button("Remove", GUILayout.Width(60)))
+            {
+                ArrayUtility.RemoveAt(ref selectedTask.requirements, i);
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        if (GUILayout.Button("Add Requirement"))
+        {
+            ArrayUtility.Add(ref selectedTask.requirements, null);
+        }
     }
 
     private void DisplaySubTasks()
     {
         EditorGUILayout.LabelField("Sub-Tasks", EditorStyles.boldLabel);
 
-        if (selectedTask.subTasks != null)
+        if (selectedTask.subTasks == null)
         {
-            for (int i = 0; i < selectedTask.subTasks.Length; i++)
+            selectedTask.subTasks = new BaseTask[0];
+        }
+
+        for (int i = 0; i < selectedTask.subTasks.Length; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            selectedTask.subTasks[i] = (BaseTask)EditorGUILayout.ObjectField(selectedTask.subTasks[i], typeof(BaseTask), false);
+            if (GUILayout.Button("Remove", GUILayout.Width(60)))
             {
-                EditorGUILayout.BeginHorizontal();
-                selectedTask.subTasks[i] = (BaseTask)EditorGUILayout.ObjectField(selectedTask.subTasks[i], typeof(BaseTask), false);
-                if (GUILayout.Button("Remove", GUILayout.Width(60)))
-                {
-                    ArrayUtility.RemoveAt(ref selectedTask.subTasks, i);
-                }
-                EditorGUILayout.EndHorizontal();
+                ArrayUtility.RemoveAt(ref selectedTask.subTasks, i);
             }
+            EditorGUILayout.EndHorizontal();
         }
 
         if (GUILayout.Button("Add Sub-Task"))
         {
-            selectedTask.subTasks ??= Array.Empty<BaseTask>();
             ArrayUtility.Add(ref selectedTask.subTasks, null);
         }
     }
@@ -197,12 +209,13 @@ public class TaskEditorWindow : EditorWindow
             {
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button(task.taskName))
+                {
                     selectedTask = task;
-                
+                }
                 if (GUILayout.Button("Delete", GUILayout.Width(60)))
-                    if (EditorUtility.DisplayDialog("Delete Task", $"Are you sure you want to delete selected task? ({selectedTask.name})", "Yes", "No"))
-                        tasksToDelete.Add(task);
-                
+                {
+                    tasksToDelete.Add(task);
+                }
                 EditorGUILayout.EndHorizontal();
             }
 

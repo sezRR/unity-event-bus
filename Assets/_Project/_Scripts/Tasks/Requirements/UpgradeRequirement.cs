@@ -26,7 +26,7 @@ namespace _Project._Scripts.NewTasks
 
         private void OnUpgradePurchased(UpgradeEvent upgradeEvent)
         {
-            if (upgradeEvent.Upgrade == requiredUpgrade)
+            if (upgradeEvent.Upgrade.id == requiredUpgrade.id)
             {
                 isPurchased = true;
                 Debug.Log($"Upgrade '{requiredUpgrade.upgradeName}' purchased!");
