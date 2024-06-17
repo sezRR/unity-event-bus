@@ -11,5 +11,7 @@ public abstract class MenuUpgradeBase : UpgradeBase, IMenuUpgrade
         {
             menuComponent.IncreaseMenuVariety(menuVarietyIncrease);
         }
+
+        RaiseUpgradeEvent();
     }
 }

@@ -1,0 +1,19 @@
+﻿/* TaskGraphViewStyle.uss */
+
+.task-node {
+    background-color: #333;
+    border: 1px solid #555;
+}
+
+.task-node .title {
+    background-color: #555;
+    color: white;
+    padding: 4px;
+    border-bottom: 1px solid #333;
+}
+
+.task-node .input, .task-node .output {
+    background-color: #555;
+    padding: 4px;
+    color: white;
+}

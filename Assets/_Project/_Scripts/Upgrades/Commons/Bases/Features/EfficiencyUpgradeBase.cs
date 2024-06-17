@@ -11,5 +11,7 @@ public abstract class EfficiencyUpgradeBase : UpgradeBase, IBaristaUpgrade
         {
             baristaComponent.IncreaseEfficiency(efficiencyIncrease);
         }
+        
+        RaiseUpgradeEvent();
     }
 }

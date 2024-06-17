@@ -11,5 +11,7 @@ public abstract class MachineUpgradeBase : UpgradeBase, IEquipmentUpgrade
         {
             machineComponent.IncreaseSpeed(speedIncrease);
         }
+        
+        RaiseUpgradeEvent();
     }
 }

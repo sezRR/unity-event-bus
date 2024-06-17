@@ -42,21 +42,20 @@ public class UpgradeManager : MonoBehaviour
     {
         var upgradeInstance = Instantiate(upgrade);
 
-        if (upgrade is IBaristaUpgrade)
+        switch (upgrade)
         {
-            upgradeInstance.ApplyUpgrade(barista);
-        }
-        else if (upgrade is IEquipmentUpgrade)
-        {
-            upgradeInstance.ApplyUpgrade(equipment);
-        }
-        else if (upgrade is IDecorUpgrade)
-        {
-            upgradeInstance.ApplyUpgrade(decor);
-        }
-        else if (upgrade is IMenuUpgrade)
-        {
-            upgradeInstance.ApplyUpgrade(menu);
+            case IBaristaUpgrade:
+                upgradeInstance.ApplyUpgrade(barista);
+                break;
+            case IEquipmentUpgrade:
+                upgradeInstance.ApplyUpgrade(equipment);
+                break;
+            case IDecorUpgrade:
+                upgradeInstance.ApplyUpgrade(decor);
+                break;
+            case IMenuUpgrade:
+                upgradeInstance.ApplyUpgrade(menu);
+                break;
         }
     }
 }

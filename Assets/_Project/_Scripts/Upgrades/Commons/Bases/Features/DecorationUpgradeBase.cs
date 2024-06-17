@@ -11,5 +11,7 @@ public abstract class DecorationUpgradeBase : UpgradeBase, IDecorUpgrade
         {
             decorComponent.IncreaseAttractiveness(attractivenessIncrease);
         }
+
+        RaiseUpgradeEvent();
     }
 }

@@ -1,8 +1,4 @@
-﻿public interface IEvent
-{
-}
-
-public class TestEvent : IEvent { }
+﻿public class TestEvent : IEvent { }
 
 public struct PlayerEvent : IEvent
 {
