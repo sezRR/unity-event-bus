@@ -1,19 +1,18 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using _Project._Scripts.NewTasks;
 using _Project._Scripts.Tasks.Commons.Bases;
 
 public class TaskEditorWindow : EditorWindow
 {
     private BaseTask selectedTask;
     private Vector2 scrollPosition;
-    private List<BaseTask> allTasks = new List<BaseTask>();
-    private List<BaseTask> tasksToDelete = new List<BaseTask>();
+    private List<BaseTask> allTasks = new();
+    private List<BaseTask> tasksToDelete = new();
     private Texture2D windowIcon;
     private const string IconPath = "Assets/Editor/Icons/TaskEditorIcon.png";
 
-    [MenuItem("Window/Task Editor")]
+    [MenuItem("Tools/Editors/Task Editor")]
     public static void ShowWindow()
     {
         var window = GetWindow<TaskEditorWindow>("Task Editor", typeof(SceneView));

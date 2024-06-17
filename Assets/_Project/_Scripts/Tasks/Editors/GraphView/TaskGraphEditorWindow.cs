@@ -9,7 +9,7 @@ public class TaskGraphEditorWindow : EditorWindow
 {
     private TaskGraphView _graphView;
 
-    [MenuItem("Window/Task Graph")]
+    [MenuItem("Tools/Editors/Task Graph")]
     public static void OpenTaskGraphWindow()
     {
         var window = GetWindow<TaskGraphEditorWindow>();

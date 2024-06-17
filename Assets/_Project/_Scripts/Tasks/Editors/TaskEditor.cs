@@ -1,5 +1,4 @@
-﻿using _Project._Scripts.NewTasks;
-using _Project._Scripts.Tasks.Commons.Bases;
+﻿using _Project._Scripts.Tasks.Commons.Bases;
 using UnityEditor;
 using UnityEngine;
 
