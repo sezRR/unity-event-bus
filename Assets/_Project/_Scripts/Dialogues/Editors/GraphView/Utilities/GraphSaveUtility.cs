@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using _Project._Scripts.Dialogues.Editors.GraphView.Components.Nodes;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -109,7 +110,7 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Utilities
                 dialogueContainer.DialogueNodeData.Add(new DialogueNodeData
                 {
                     Guid = dialogueNode.Guid,
-                    DialogueText = dialogueNode.DialogueText,
+                    DialogueText = dialogueNode.Text,
                     Position = dialogueNode.GetPosition().position
                 });
             }

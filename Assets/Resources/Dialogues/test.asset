@@ -13,22 +13,18 @@ MonoBehaviour:
   m_Name: test
   m_EditorClassIdentifier: 
   NodeLinks:
-  - BaseNodeGuid: d7f332ee-91cb-4b47-9155-32bb7b79fc1e
+  - BaseNodeGuid: ab74e675-2b15-43a4-be4a-84adeb6d3642
     PortName: Next
-    TargetNodeGuid: 7bea019c-afd7-4834-ac04-c1a1df3d34f8
-  - BaseNodeGuid: 7bea019c-afd7-4834-ac04-c1a1df3d34f8
-    PortName: 1
-    TargetNodeGuid: ef13e493-df1b-49cb-9bc1-d0173c726b35
-  - BaseNodeGuid: 7bea019c-afd7-4834-ac04-c1a1df3d34f8
-    PortName: 2
-    TargetNodeGuid: 3605fffb-2978-43b8-be7e-2423ad338f6a
+    TargetNodeGuid: 96282b59-a575-42ff-83b7-40b66c67e7e9
+  - BaseNodeGuid: 96282b59-a575-42ff-83b7-40b66c67e7e9
+    PortName: Choice 0
+    TargetNodeGuid: 90c67988-60f3-40a5-9e41-0432b17b6be6
   DialogueNodeData:
-  - Guid: 7bea019c-afd7-4834-ac04-c1a1df3d34f8
+  - Guid: 90c67988-60f3-40a5-9e41-0432b17b6be6
+    DialogueText: Sample Dialogue
+    Position: {x: 746, y: 200}
+  - Guid: 96282b59-a575-42ff-83b7-40b66c67e7e9
     DialogueText: Dialogue Node
-    Position: {x: 266, y: 200}
-  - Guid: ef13e493-df1b-49cb-9bc1-d0173c726b35
-    DialogueText: Dialogue Node
-    Position: {x: 603, y: 200}
-  - Guid: 3605fffb-2978-43b8-be7e-2423ad338f6a
-    DialogueText: Dialogue Node
-    Position: {x: 603, y: 326}
+    Position: {x: 442, y: 236}
+  ExposedProperties: []
+  CommentBlockData: []

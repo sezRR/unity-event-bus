@@ -1,6 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using _Project._Scripts.Dialogues.Editors.GraphView.Components.Helpers;
+using _Project._Scripts.Dialogues.Editors.GraphView.Components.Nodes;
+using _Project._Scripts.Dialogues.Editors.GraphView.Utilities;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -16,7 +18,6 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
         private NodeSearchWindow _searchWindow;
 
         public Blackboard Blackboard;
-        private EditorWindow _editorWindow;
         public List<ExposedProperty> ExposedProperties = new();
 
         private bool _isRightMouseDragging;
@@ -39,13 +40,25 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
             Insert(0, grid);
             grid.StretchToParentSize();
 
-            AddElement(GenerateEntryPointNode());
+            InitializeBoundryNodes();
+            RegisterPointerEventCallbacks();
+            
+            AddSearchWindow(editorWindow);
+        }
 
+        private void InitializeBoundryNodes()
+        {
+            var startNode = new StartNode().CreateNode();
+            AddElement(startNode);
+            
+            var endNode = new EndNode().CreateNode();
+            AddElement(endNode);
+        }
+
+        private void RegisterPointerEventCallbacks()
+        {
             RegisterCallback<PointerDownEvent>(OnPointerDown);
             RegisterCallback<PointerMoveEvent>(OnPointerMove);
-
-            _editorWindow = editorWindow;
-            AddSearchWindow(editorWindow);
         }
 
         private void AddSearchWindow(EditorWindow editorWindow)
@@ -87,14 +100,6 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
             if (_isRightMouseDragging) return;
 
             base.BuildContextualMenu(evt);
-
-            // var mousePosition = contentViewContainer.LocalToWorld(evt.mousePosition + _editorWindow.position.position + new Vector2(125, 0));
-            // nodeCreationRequest(new NodeCreationContext()
-            // {
-            //     screenMousePosition = mousePosition,
-            //     target = null,
-            //     index = -1
-            // });
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
@@ -103,97 +108,17 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
                     endPort.direction != startPort.direction
                     && endPort != startPort
                     && startPort.node != endPort.node)
-                // && !endPort.connections.ToList().Exists(connection => connection.output.node == startPort.node))
                 .ToList();
-        }
-
-        // Port Direction -> is it input or output
-        private Port GeneratePort(DialogueNode node, Direction portDirection,
-            Port.Capacity capacity = Port.Capacity.Single, Orientation orientation = Orientation.Horizontal)
-        {
-            return node.InstantiatePort(orientation, portDirection, capacity, typeof(float)); // Arbitrary type
-        }
-
-        private DialogueNode GenerateEntryPointNode()
-        {
-            var node = new DialogueNode()
-            {
-                title = "START",
-                Guid = Guid.NewGuid().ToString(),
-                DialogueText = "Sample Dialogue",
-                EntryPoint = true
-            };
-
-            var generatedPort = GeneratePort(node, Direction.Output);
-            generatedPort.portName = "Next";
-            node.outputContainer.Add(generatedPort);
-
-            node.capabilities &= ~Capabilities.Movable;
-            node.capabilities &= ~Capabilities.Deletable;
-
-            node.RefreshExpandedState();
-            node.RefreshPorts();
-
-            node.SetPosition(new Rect(100, 200, 100, 150));
-            return node;
         }
 
         public void CreateNode(string nodeName, Vector2 position)
         {
-            AddElement(CreateDialogueNode(nodeName, position));
-        }
-
-        public DialogueNode CreateDialogueNode(string nodeName, Vector2 position)
-        {
-            var dialogueNode = new DialogueNode
-            {
-                title = nodeName,
-                DialogueText = nodeName,
-                Guid = Guid.NewGuid().ToString()
-            };
-
-            var inputPort = GeneratePort(dialogueNode, Direction.Input, Port.Capacity.Multi);
-            inputPort.portName = "Input";
-            dialogueNode.inputContainer.Add(inputPort);
-
-            dialogueNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
-
-            var button = new Button(() => { AddChoicePort(dialogueNode); });
-
-            button.text = "New Choice";
-            dialogueNode.titleContainer.Add(button);
-
-            var textField = new TextField(Empty);
-            textField.RegisterValueChangedCallback(evt =>
-            {
-                dialogueNode.DialogueText = evt.newValue;
-                dialogueNode.title = evt.newValue;
-            });
-
-            textField.SetValueWithoutNotify(dialogueNode.title);
-            dialogueNode.mainContainer.Add(textField);
-
-            dialogueNode.RefreshExpandedState();
-            dialogueNode.RefreshPorts();
-            dialogueNode.SetPosition(new Rect(position, DefaultNodeSize));
-
-            // Add initial choice port TODO
-            // AddChoicePort(dialogueNode);
-
-            // TO RE-SIZE
-            dialogueNode.style.minWidth = 240;
-            // dialogueNode.style.maxWidth = 360;
-            // dialogueNode.capabilities |= Capabilities.Resizable; 
-            var a = new ResizableElement();
-            dialogueNode.contentContainer.Add(a);
-            //---
-
-            return dialogueNode;
+            AddElement(NodeHelper.CreateDialogueNode(nodeName, position));
         }
 
         public void AddChoicePort(DialogueNode dialogueNode, string overridenPortName = "")
         {
-            var generatedPort = GeneratePort(dialogueNode, Direction.Output);
+            var generatedPort = NodeHelper.GeneratePort(dialogueNode, Direction.Output);
 
             var oldLabel = generatedPort.contentContainer.Q<Label>("type");
             oldLabel.style.display = DisplayStyle.None;
@@ -212,9 +137,6 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
 
             textField.style.minWidth = 60;
             textField.style.maxWidth = 100;
-
-            // TODO: a
-            Debug.Log("AAAAA");
 
             textField.RegisterValueChangedCallback(evt => generatedPort.portName = evt.newValue);
             generatedPort.contentContainer.Add(new Label("   "));
@@ -244,8 +166,6 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
                 edge.input.Disconnect(edge);
                 RemoveElement(targetedEdge.First());
             }
-
-            ;
 
             dialogueNode.outputContainer.Remove(generatedPort);
             dialogueNode.RefreshPorts();

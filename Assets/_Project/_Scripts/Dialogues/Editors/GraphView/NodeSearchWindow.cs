@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using _Project._Scripts.Dialogues.Editors.GraphView;
+using _Project._Scripts.Dialogues.Editors.GraphView.Components.Nodes;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
