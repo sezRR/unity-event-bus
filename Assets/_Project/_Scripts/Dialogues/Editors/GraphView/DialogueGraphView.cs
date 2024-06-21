@@ -12,12 +12,15 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
     public class DialogueGraphView : UnityEditor.Experimental.GraphView.GraphView
     {
         public readonly Vector2 DefaultNodeSize = new(150, 200);
+        public readonly Vector2 DefaultCommentBlockSize = new Vector2(300, 200);
         private NodeSearchWindow _searchWindow;
+
+        public Blackboard Blackboard;
         private EditorWindow _editorWindow;
-        
+        public List<ExposedProperty> ExposedProperties = new();
+
         private bool _isRightMouseDragging;
-    
-        
+
         public DialogueGraphView(EditorWindow editorWindow)
         {
             styleSheets.Add(Resources.Load<StyleSheet>("DialogueGraph"));
@@ -49,7 +52,22 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
         {
             _searchWindow = ScriptableObject.CreateInstance<NodeSearchWindow>();
             _searchWindow.Init(this, editorWindow);
-            nodeCreationRequest = context => SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), _searchWindow);
+            nodeCreationRequest = context =>
+                SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), _searchWindow);
+        }
+        
+        public Group CreateCommentBlock(Rect rect, CommentBlockData commentBlockData = null)
+        {
+            if(commentBlockData==null)
+                commentBlockData = new CommentBlockData();
+            var group = new Group
+            {
+                autoUpdateGeometry = true,
+                title = commentBlockData.Title
+            };
+            AddElement(group);
+            group.SetPosition(rect);
+            return group;
         }
 
         private void OnPointerDown(PointerDownEvent evt)
@@ -68,13 +86,15 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
         {
             if (_isRightMouseDragging) return;
 
-            var mousePosition = contentViewContainer.LocalToWorld(evt.mousePosition + _editorWindow.position.position + new Vector2(125, 0));
-            nodeCreationRequest(new NodeCreationContext()
-            {
-                screenMousePosition = mousePosition,
-                target = null,
-                index = -1
-            });
+            base.BuildContextualMenu(evt);
+
+            // var mousePosition = contentViewContainer.LocalToWorld(evt.mousePosition + _editorWindow.position.position + new Vector2(125, 0));
+            // nodeCreationRequest(new NodeCreationContext()
+            // {
+            //     screenMousePosition = mousePosition,
+            //     target = null,
+            //     index = -1
+            // });
         }
 
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
@@ -83,7 +103,7 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
                     endPort.direction != startPort.direction
                     && endPort != startPort
                     && startPort.node != endPort.node)
-                    // && !endPort.connections.ToList().Exists(connection => connection.output.node == startPort.node))
+                // && !endPort.connections.ToList().Exists(connection => connection.output.node == startPort.node))
                 .ToList();
         }
 
@@ -110,7 +130,7 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
 
             node.capabilities &= ~Capabilities.Movable;
             node.capabilities &= ~Capabilities.Deletable;
-            
+
             node.RefreshExpandedState();
             node.RefreshPorts();
 
@@ -135,7 +155,7 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
             var inputPort = GeneratePort(dialogueNode, Direction.Input, Port.Capacity.Multi);
             inputPort.portName = "Input";
             dialogueNode.inputContainer.Add(inputPort);
-            
+
             dialogueNode.styleSheets.Add(Resources.Load<StyleSheet>("Node"));
 
             var button = new Button(() => { AddChoicePort(dialogueNode); });
@@ -149,7 +169,7 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
                 dialogueNode.DialogueText = evt.newValue;
                 dialogueNode.title = evt.newValue;
             });
-            
+
             textField.SetValueWithoutNotify(dialogueNode.title);
             dialogueNode.mainContainer.Add(textField);
 
@@ -163,9 +183,9 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
             // TO RE-SIZE
             dialogueNode.style.minWidth = 240;
             // dialogueNode.style.maxWidth = 360;
-            dialogueNode.capabilities |= Capabilities.Resizable; 
-            // var a = new ResizableElement();
-            // dialogueNode.contentContainer.Add(a);
+            // dialogueNode.capabilities |= Capabilities.Resizable; 
+            var a = new ResizableElement();
+            dialogueNode.contentContainer.Add(a);
             //---
 
             return dialogueNode;
@@ -192,7 +212,7 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
 
             textField.style.minWidth = 60;
             textField.style.maxWidth = 100;
-            
+
             // TODO: a
             Debug.Log("AAAAA");
 
@@ -223,11 +243,56 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
                 var edge = targetedEdge.First();
                 edge.input.Disconnect(edge);
                 RemoveElement(targetedEdge.First());
-            };
-            
+            }
+
+            ;
+
             dialogueNode.outputContainer.Remove(generatedPort);
             dialogueNode.RefreshPorts();
             dialogueNode.RefreshExpandedState();
+        }
+
+        public void ClearBlackBoardAndExposedProperties()
+        {
+            ExposedProperties.Clear();
+            Blackboard.Clear();
+        }
+        
+        public void AddPropertyToBlackBoard(ExposedProperty exposedProperty, bool loadMode = false)
+        {
+            var localPropertyName = exposedProperty.Name;
+            var localPropertyValue = exposedProperty.Value;
+
+            if (!loadMode)
+            {
+                while (ExposedProperties.Any(x => x.Name == localPropertyName))
+                    localPropertyName = $"{localPropertyName}(1)";
+            }
+            
+            var property = new ExposedProperty();
+            property.Name = localPropertyName;
+            property.Value = localPropertyValue;
+            ExposedProperties.Add(property);
+
+            var container = new VisualElement();
+            var blackboardField = new BlackboardField { text = property.Name, typeText = "string property" };
+            container.Add(blackboardField);
+
+            var propertyValueTextField = new TextField("Value: ")
+            {
+                value = localPropertyValue,
+            };
+            propertyValueTextField.RegisterValueChangedCallback(evt =>
+            {
+                var changingPropertyIndex =
+                    ExposedProperties.FindIndex(exposedPropertyItem => exposedPropertyItem.Name == property.Name);
+                ExposedProperties[changingPropertyIndex].Value = evt.newValue;
+            });
+
+            var blackBoardValueRow = new BlackboardRow(blackboardField, propertyValueTextField);
+            container.Add(blackBoardValueRow);
+
+            Blackboard.Add(container);
         }
     }
 }

@@ -13,22 +13,43 @@ MonoBehaviour:
   m_Name: New Narrative
   m_EditorClassIdentifier: 
   NodeLinks:
-  - BaseNodeGuid: d7f332ee-91cb-4b47-9155-32bb7b79fc1e
+  - BaseNodeGuid: 5b228102-a3e2-4b81-8d6a-83030d01e359
     PortName: Next
-    TargetNodeGuid: 8e46242e-3127-4eac-8046-6843738873e3
-  - BaseNodeGuid: 8e46242e-3127-4eac-8046-6843738873e3
-    PortName: Hey
-    TargetNodeGuid: 3e596689-bcad-4c54-9bbb-ff2b75ec10be
-  - BaseNodeGuid: 8e46242e-3127-4eac-8046-6843738873e3
+    TargetNodeGuid: fb23fd99-c4c0-4bf6-8072-6918db958e47
+  - BaseNodeGuid: ccf24509-f2fd-4252-adcf-9f11cee8e041
+    PortName: Choice 0
+    TargetNodeGuid: 64a09cbe-8446-4707-a94c-848dde52e738
+  - BaseNodeGuid: ccf24509-f2fd-4252-adcf-9f11cee8e041
     PortName: Choice 1
-    TargetNodeGuid: e79bad10-2862-484b-bc5f-8323330e1a75
+    TargetNodeGuid: c8704f71-e77a-4eeb-bceb-8b80f0ade387
+  - BaseNodeGuid: fb23fd99-c4c0-4bf6-8072-6918db958e47
+    PortName: Choice 0
+    TargetNodeGuid: ccf24509-f2fd-4252-adcf-9f11cee8e041
   DialogueNodeData:
-  - Guid: 3e596689-bcad-4c54-9bbb-ff2b75ec10be
+  - Guid: ccf24509-f2fd-4252-adcf-9f11cee8e041
     DialogueText: Dialogue Node
-    Position: {x: 595, y: 82}
-  - Guid: e79bad10-2862-484b-bc5f-8323330e1a75
+    Position: {x: 669, y: 203}
+  - Guid: c8704f71-e77a-4eeb-bceb-8b80f0ade387
     DialogueText: Dialogue Node
-    Position: {x: 606, y: 272}
-  - Guid: 8e46242e-3127-4eac-8046-6843738873e3
+    Position: {x: 1002, y: 323}
+  - Guid: 64a09cbe-8446-4707-a94c-848dde52e738
     DialogueText: Dialogue Node
-    Position: {x: 242, y: 200}
+    Position: {x: 1002, y: 126}
+  - Guid: fb23fd99-c4c0-4bf6-8072-6918db958e47
+    DialogueText: Hi!
+    Position: {x: 359, y: 203}
+  ExposedProperties:
+  - Name: New String
+    Value: New Value
+  - Name: New String (1)
+    Value: New Value
+  - Name: New String (1) (1)
+    Value: a
+  CommentBlockData:
+  - ChildNodes:
+    - ccf24509-f2fd-4252-adcf-9f11cee8e041
+    - c8704f71-e77a-4eeb-bceb-8b80f0ade387
+    - 64a09cbe-8446-4707-a94c-848dde52e738
+    - fb23fd99-c4c0-4bf6-8072-6918db958e47
+    Position: {x: 334, y: 67}
+    Title: Comment Block

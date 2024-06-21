@@ -16,6 +16,9 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Utilities
         private List<Edge> Edges => _targetGraphView.edges.ToList();
         private List<DialogueNode> Nodes => _targetGraphView.nodes.ToList().Cast<DialogueNode>().ToList();
 
+        private List<Group> CommentBlocks =>
+            _targetGraphView.graphElements.ToList().Where(x => x is Group).Cast<Group>().ToList();
+
         public static GraphSaveUtility GetInstance(DialogueGraphView targetGraphView)
         {
             return new GraphSaveUtility
@@ -26,9 +29,64 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Utilities
 
         public void SaveGraph(string fileName)
         {
-            if (!Edges.Any()) return;
-
             var dialogueContainer = ScriptableObject.CreateInstance<DialogueContainer>();
+
+            if (!SaveNodes(dialogueContainer)) return;
+            SaveExposedProperties(dialogueContainer);
+            SaveCommentBlocks(dialogueContainer);
+
+            if (!AssetDatabase.IsValidFolder("Assets/Resources/Dialogues"))
+            {
+                AssetDatabase.CreateFolder("Assets", "Resources");
+                AssetDatabase.CreateFolder("Assets/Resources", "Dialogues");
+            }
+
+            UnityEngine.Object loadedAsset =
+                AssetDatabase.LoadAssetAtPath($"Assets/Resources/Dialogues/{fileName}.asset", typeof(DialogueContainer));
+
+            if (loadedAsset == null || !AssetDatabase.Contains(loadedAsset))
+            {
+                AssetDatabase.CreateAsset(dialogueContainer, $"Assets/Resources/Dialogues/{fileName}.asset");
+            }
+            else
+            {
+                DialogueContainer container = loadedAsset as DialogueContainer;
+                container.NodeLinks = dialogueContainer.NodeLinks;
+                container.DialogueNodeData = dialogueContainer.DialogueNodeData;
+                container.ExposedProperties = dialogueContainer.ExposedProperties;
+                container.CommentBlockData = dialogueContainer.CommentBlockData;
+                EditorUtility.SetDirty(container);
+            }
+
+            AssetDatabase.SaveAssets();
+        }
+
+        private void SaveCommentBlocks(DialogueContainer dialogueContainer)
+        {
+            foreach (var block in CommentBlocks)
+            {
+                var nodes = block.containedElements.Where(x => x is DialogueNode).Cast<DialogueNode>()
+                    .Select(x => x.Guid)
+                    .ToList();
+
+                dialogueContainer.CommentBlockData.Add(new CommentBlockData
+                {
+                    ChildNodes = nodes,
+                    Title = block.title,
+                    Position = block.GetPosition().position
+                });
+            }
+        }
+
+        private void SaveExposedProperties(DialogueContainer dialogueContainer)
+        {
+            dialogueContainer.ExposedProperties.AddRange(_targetGraphView.ExposedProperties);
+        }
+
+        private bool SaveNodes(DialogueContainer dialogueContainer)
+        {
+            if (!Edges.Any()) return false;
+
             var connectedPorts = Edges.Where(edge => edge.input.node != null).ToArray();
 
             for (int i = 0; i < connectedPorts.Length; i++)
@@ -56,14 +114,7 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Utilities
                 });
             }
 
-            if (!AssetDatabase.IsValidFolder("Assets/Resources/Dialogues"))
-            {
-                AssetDatabase.CreateFolder("Assets", "Resources");
-                AssetDatabase.CreateFolder("Assets/Resources", "Dialogues");
-            }
-
-            AssetDatabase.CreateAsset(dialogueContainer, $"Assets/Resources/Dialogues/{fileName}.asset");
-            AssetDatabase.SaveAssets();
+            return true;
         }
 
         public void LoadGraph(string fileName)
@@ -78,6 +129,17 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Utilities
             ClearGraph();
             CreateNodes();
             ConnectNodes();
+            CreateExposedProperties();
+            GenerateCommentBlocks();
+        }
+
+        private void CreateExposedProperties()
+        {
+            _targetGraphView.ClearBlackBoardAndExposedProperties();
+            foreach (var containerExposedProperty in _container.ExposedProperties)
+            {
+                _targetGraphView.AddPropertyToBlackBoard(containerExposedProperty);
+            }
         }
 
         private void ConnectNodes()
@@ -109,10 +171,10 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Utilities
                 output = output,
                 input = input
             };
-            
+
             tempEdge.input.Connect(tempEdge);
             tempEdge.output.Connect(tempEdge);
-            
+
             _targetGraphView.Add(tempEdge);
         }
 
@@ -140,6 +202,22 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Utilities
                 Edges.Where((edge) => edge.input.node == node).ToList()
                     .ForEach(edge => _targetGraphView.RemoveElement(edge));
                 _targetGraphView.RemoveElement(node);
+            }
+        }
+
+        private void GenerateCommentBlocks()
+        {
+            foreach (var commentBlock in CommentBlocks)
+            {
+                _targetGraphView.RemoveElement(commentBlock);
+            }
+
+            foreach (var commentBlockData in _container.CommentBlockData)
+            {
+                var block = _targetGraphView.CreateCommentBlock(
+                    new Rect(commentBlockData.Position, _targetGraphView.DefaultCommentBlockSize),
+                    commentBlockData);
+                block.AddElements(Nodes.Where(x => commentBlockData.ChildNodes.Contains(x.Guid)));
             }
         }
     }
