@@ -35,14 +35,14 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Components.Nodes
                 Text = Text
             };
             
-            var portConfiguration = new PortConfiguration
+            var inputPortConfiguration = new PortConfiguration
             {
                 Name = "Input",
                 Direction = Direction.Input,
                 Capacity = Port.Capacity.Multi
             };
             
-            return NodeHelper.GenerateDialogueNode(dialogueNode, Vector2.zero, portConfiguration);
+            return NodeHelper.GenerateDialogueNode(dialogueNode, Position, inputPortConfiguration, Size);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using _Project._Scripts.Dialogues.Editors.GraphView.Components.Helpers;
 using _Project._Scripts.Dialogues.Editors.GraphView.Components.Nodes;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
@@ -105,15 +106,16 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Utilities
                 });
             }
 
-            foreach (var dialogueNode in Nodes.Where(node => !node.EntryPoint))
-            {
-                dialogueContainer.DialogueNodeData.Add(new DialogueNodeData
-                {
-                    Guid = dialogueNode.Guid,
-                    DialogueText = dialogueNode.Text,
-                    Position = dialogueNode.GetPosition().position
-                });
-            }
+            // TODO: NOT IMPLEMENTED
+            // foreach (var dialogueNode in Nodes.Where(node => !node.EntryPoint))
+            // {
+            //     dialogueContainer.DialogueNodeData.Add(new DialogueNodeData
+            //     {
+            //         Guid = dialogueNode.Guid,
+            //         DialogueText = dialogueNode.Text,
+            //         Position = dialogueNode.GetPosition().position
+            //     });
+            // }
 
             return true;
         }
@@ -183,27 +185,32 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Utilities
         {
             foreach (var nodeData in _container.DialogueNodeData)
             {
-                var tempNode = _targetGraphView.CreateDialogueNode(nodeData.DialogueText, Vector2.zero);
+                var tempDialogueNode = new DialogueNode(nodeData.DialogueText)
+                {
+                    Position = nodeData.Position
+                };
+                var tempNode = tempDialogueNode.CreateNode();
                 tempNode.Guid = nodeData.Guid;
                 _targetGraphView.AddElement(tempNode);
 
                 var nodePorts = _container.NodeLinks.Where(nodeLink => nodeLink.BaseNodeGuid == nodeData.Guid).ToList();
-                nodePorts.ForEach(nodeLink => _targetGraphView.AddChoicePort(tempNode, nodeLink.PortName));
+                nodePorts.ForEach(nodeLink => PortHelper.AddChoicePortToNode(tempNode, nodeLink.PortName));
             }
         }
 
         private void ClearGraph()
         {
-            Nodes.Find(node => node.EntryPoint).Guid = _container.NodeLinks[0].BaseNodeGuid;
-
-            foreach (var node in Nodes)
-            {
-                if (node.EntryPoint) continue;
-
-                Edges.Where((edge) => edge.input.node == node).ToList()
-                    .ForEach(edge => _targetGraphView.RemoveElement(edge));
-                _targetGraphView.RemoveElement(node);
-            }
+            // TODO: NOT IMPLEMENTED
+            // Nodes.Find(node => node.EntryPoint).Guid = _container.NodeLinks[0].BaseNodeGuid;
+            //
+            // foreach (var node in Nodes)
+            // {
+            //     if (node.EntryPoint) continue;
+            //
+            //     Edges.Where((edge) => edge.input.node == node).ToList()
+            //         .ForEach(edge => _targetGraphView.RemoveElement(edge));
+            //     _targetGraphView.RemoveElement(node);
+            // }
         }
 
         private void GenerateCommentBlocks()

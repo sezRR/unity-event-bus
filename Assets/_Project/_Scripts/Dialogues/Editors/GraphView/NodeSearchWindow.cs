@@ -52,10 +52,14 @@ public class NodeSearchWindow : ScriptableObject, ISearchWindowProvider
 
         switch (SearchTreeEntry.userData)
         {
-            case DialogueNode dialogueNode:
-                _graphView.CreateNode("Dialogue Node", localMousePosition);
+            case DialogueNode:
+                var dialogueNodeInstance = new DialogueNode("New Dialogue Node")
+                {
+                    Position = localMousePosition
+                };
+                _graphView.CreateNode(dialogueNodeInstance);
                 return true;
-            case Group group:
+            case Group:
                 var rect = new Rect(localMousePosition, _graphView.DefaultCommentBlockSize);
                 _graphView.CreateCommentBlock(rect);
                 return true;

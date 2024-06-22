@@ -2,12 +2,18 @@
 using _Project._Scripts.Dialogues.Editors.GraphView.Components.Helpers;
 using _Project._Scripts.Dialogues.Editors.GraphView.Utilities;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 
 namespace _Project._Scripts.Dialogues.Editors.GraphView.Components.Nodes
 {
     public class EndNode : BoundryNode
     {
-        public override string title { get; set; } = "END";
+        public override Vector2 Position { get; set; } = new(750, 200);
+        
+        public EndNode()
+        {
+            title = "END";
+        }
         
         public override BaseNode CreateNode()
         {
@@ -18,7 +24,7 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView.Components.Nodes
                 Capacity = Port.Capacity.Multi
             };
 
-            return NodeHelper.GenerateBoundryNode(this, portConfiguration);
+            return NodeHelper.GenerateBoundryNode(this, portConfiguration, Size);
         }
     }
 }

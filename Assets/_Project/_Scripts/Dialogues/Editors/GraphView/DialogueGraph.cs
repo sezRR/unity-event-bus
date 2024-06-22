@@ -7,9 +7,9 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class DialogueGraph : EditorWindow
+public class DialogueGraph : GraphViewEditorWindow
 {
-    private DialogueGraphView _graphView;
+    public DialogueGraphView GraphView { get; private set; }
     private string _fileName = "New Narrative";
 
     [MenuItem("Tools/Editors/Dialogue Graph")]
@@ -29,31 +29,31 @@ public class DialogueGraph : EditorWindow
 
     private void GenerateBlackBoard()
     {
-        var blackboard = new Blackboard(_graphView);
+        var blackboard = new Blackboard(GraphView);
         blackboard.Add(new BlackboardSection
         {
             title = "Exposed Properties"
         });
 
-        blackboard.addItemRequested = _blackboard => { _graphView.AddPropertyToBlackBoard(new ExposedProperty()); };
+        blackboard.addItemRequested = _blackboard => { GraphView.AddPropertyToBlackBoard(new ExposedProperty()); };
         blackboard.editTextRequested = (blackboard, element, newValue) =>
         {
             var oldPropertyName = ((BlackboardField)element).text;
-            if (_graphView.ExposedProperties.Any(x => x.Name == newValue))
+            if (GraphView.ExposedProperties.Any(x => x.Name == newValue))
             {
                 EditorUtility.DisplayDialog("Error", "This property name already exists, please choose another!", "OK");
                 return;
             }
 
-            var propertyIndex = _graphView.ExposedProperties.FindIndex(x => x.Name == oldPropertyName);
-            _graphView.ExposedProperties[propertyIndex].Name = newValue;
+            var propertyIndex = GraphView.ExposedProperties.FindIndex(x => x.Name == oldPropertyName);
+            GraphView.ExposedProperties[propertyIndex].Name = newValue;
             ((BlackboardField) element).text = newValue;
         };
         
         blackboard.SetPosition(new Rect(10, 30, 200, 300));
 
-        _graphView.Blackboard = blackboard;
-        _graphView.Add(blackboard);
+        GraphView.Blackboard = blackboard;
+        GraphView.Add(blackboard);
     }
 
     private void GenerateMiniMap()
@@ -64,10 +64,10 @@ public class DialogueGraph : EditorWindow
             maxHeight = 140
         };
 
-        var rightPosition = new Vector2(this.position.xMax - position.xMin - 200 - 10, 30);
+        var rightPosition = new Vector2(position.xMax - position.xMin - 200 - 10, 30);
 
         miniMap.SetPosition(new Rect(rightPosition.x, rightPosition.y, 200, 140));
-        _graphView.Add(miniMap);
+        GraphView.Add(miniMap);
     }
 
     private void GenerateToolBar()
@@ -83,13 +83,6 @@ public class DialogueGraph : EditorWindow
         toolbar.Add(new Button(() => RequestDataOperation(true)) { text = "Save Data" });
         toolbar.Add(new Button(() => RequestDataOperation(false)) { text = "Load Data" });
 
-        // var nodeCreateButton = new Button(() =>
-        // {
-        //     _graphView.CreateNode("Dialogue Node");
-        // });
-        // nodeCreateButton.text = "Create Node";
-        // toolbar.Add(nodeCreateButton);
-
         rootVisualElement.Add(toolbar);
     }
 
@@ -101,7 +94,7 @@ public class DialogueGraph : EditorWindow
             return;
         }
 
-        var saveUtility = GraphSaveUtility.GetInstance(_graphView);
+        var saveUtility = GraphSaveUtility.GetInstance(GraphView);
 
         if (save)
             saveUtility.SaveGraph(_fileName);
@@ -111,17 +104,17 @@ public class DialogueGraph : EditorWindow
 
     private void OnDisable()
     {
-        rootVisualElement.Remove(_graphView);
+        rootVisualElement.Remove(GraphView);
     }
 
     private void ConstructGraphView()
     {
-        _graphView = new(this)
+        GraphView = new DialogueGraphView(this)
         {
             name = "Dialogue Graph"
         };
 
-        _graphView.StretchToParentSize();
-        rootVisualElement.Add(_graphView);
+        GraphView.StretchToParentSize();
+        rootVisualElement.Add(GraphView);
     }
 }

@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using _Project._Scripts.Dialogues.Editors.GraphView.Components.Common.Bases;
+using _Project._Scripts.Dialogues.Editors.GraphView.Components.Elements;
 using _Project._Scripts.Dialogues.Editors.GraphView.Components.Helpers;
 using _Project._Scripts.Dialogues.Editors.GraphView.Components.Nodes;
-using _Project._Scripts.Dialogues.Editors.GraphView.Utilities;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -11,6 +13,7 @@ using static System.String;
 
 namespace _Project._Scripts.Dialogues.Editors.GraphView
 {
+    [Serializable]
     public class DialogueGraphView : UnityEditor.Experimental.GraphView.GraphView
     {
         public readonly Vector2 DefaultNodeSize = new(150, 200);
@@ -111,65 +114,14 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
                 .ToList();
         }
 
-        public void CreateNode(string nodeName, Vector2 position)
+        public void CreateNode(DialogueNode dialogueNode)
         {
-            AddElement(NodeHelper.CreateDialogueNode(nodeName, position));
+            AddElement(dialogueNode.CreateNode());
         }
 
-        public void AddChoicePort(DialogueNode dialogueNode, string overridenPortName = "")
+        public void InitializeRemoveFunctionalityOfPort(ButtonWithKey buttonWithKey, BaseNode baseNode, Port port)
         {
-            var generatedPort = NodeHelper.GeneratePort(dialogueNode, Direction.Output);
-
-            var oldLabel = generatedPort.contentContainer.Q<Label>("type");
-            oldLabel.style.display = DisplayStyle.None;
-            // generatedPort.contentContainer.Remove(oldLabel);
-
-            var outputPortCount = dialogueNode.outputContainer.Query("connector").ToList().Count;
-            var choicePortName = IsNullOrEmpty(overridenPortName)
-                ? $"Choice {outputPortCount}"
-                : overridenPortName;
-
-            var textField = new TextField()
-            {
-                name = Empty,
-                value = choicePortName
-            };
-
-            textField.style.minWidth = 60;
-            textField.style.maxWidth = 100;
-
-            textField.RegisterValueChangedCallback(evt => generatedPort.portName = evt.newValue);
-            generatedPort.contentContainer.Add(new Label("   "));
-            generatedPort.contentContainer.Add(textField);
-
-            var deleteButton = new Button(() => RemovePort(dialogueNode, generatedPort))
-            {
-                text = "-"
-            };
-            generatedPort.contentContainer.Add(deleteButton);
-
-            generatedPort.portName = choicePortName;
-
-            dialogueNode.outputContainer.Add(generatedPort);
-            dialogueNode.RefreshPorts();
-            dialogueNode.RefreshExpandedState();
-        }
-
-        private void RemovePort(DialogueNode dialogueNode, Port generatedPort)
-        {
-            var targetedEdge = edges.ToList().Where(edge =>
-                edge.output.portName == generatedPort.portName && edge.output.node == generatedPort.node);
-
-            if (targetedEdge.Any())
-            {
-                var edge = targetedEdge.First();
-                edge.input.Disconnect(edge);
-                RemoveElement(targetedEdge.First());
-            }
-
-            dialogueNode.outputContainer.Remove(generatedPort);
-            dialogueNode.RefreshPorts();
-            dialogueNode.RefreshExpandedState();
+            buttonWithKey.RegisterClickEvent(() => PortHelper.RemovePortFromNode(this, baseNode, port));
         }
 
         public void ClearBlackBoardAndExposedProperties()
@@ -178,6 +130,7 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
             Blackboard.Clear();
         }
         
+        // TODO: BLACKBOARD HELPER
         public void AddPropertyToBlackBoard(ExposedProperty exposedProperty, bool loadMode = false)
         {
             var localPropertyName = exposedProperty.Name;
@@ -189,9 +142,11 @@ namespace _Project._Scripts.Dialogues.Editors.GraphView
                     localPropertyName = $"{localPropertyName}(1)";
             }
             
-            var property = new ExposedProperty();
-            property.Name = localPropertyName;
-            property.Value = localPropertyValue;
+            var property = new ExposedProperty
+            {
+                Name = localPropertyName,
+                Value = localPropertyValue
+            };
             ExposedProperties.Add(property);
 
             var container = new VisualElement();
